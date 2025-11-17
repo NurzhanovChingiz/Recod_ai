@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+*.pyc
+# Models
+/models/
+
+# Data
+/data/
+
+# saved outputs
+/output/
