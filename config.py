@@ -21,15 +21,15 @@ class CFG:
     cudnn.benchmark = True
 
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
- 
-    BASE_DIR = "C:/code/Recod_ai/data/recodai-luc-scientific-image-forgery-detection" # Must be pre-downloaded
+    MAIN_DIR = os.getcwd()
+    BASE_DIR = f"{MAIN_DIR}/recodai-luc-scientific-image-forgery-detection" # Must be pre-downloaded
     AUTH_DIR = f"{BASE_DIR}/train_images/authentic"
     FORG_DIR = f"{BASE_DIR}/train_images/forged"
     MASK_DIR = f"{BASE_DIR}/train_masks"
     TEST_DIR = f"{BASE_DIR}/test_images"
-    DINO_PATH = 'C:\code\Recod_ai\models\dinov3-89m-transformers-default-v1'# Must be pre-extracted from tar
+    DINO_PATH = f"{MAIN_DIR}/models/dinov3-89m-transformers-default-v1"# Must be pre-extracted from tar
     SAVE_MODEL: bool = False
-    PATH_SAVE_MODEL = "C:\code\Recod_ai\output\model_seg_final.pt"
+    PATH_SAVE_MODEL = f"{MAIN_DIR}/output/model_seg_final.pt"
     TEST_SIZE = 0.2
     IMG_SIZE = 512
     BATCH_SIZE = 64 # Small batch size due to high resolution/ViT features
