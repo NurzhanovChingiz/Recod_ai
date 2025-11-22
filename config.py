@@ -34,7 +34,7 @@ class CFG:
     IMG_SIZE = 512
     BATCH_SIZE = 64 # Small batch size due to high resolution/ViT features
     EPOCHS = 1
-    LR = 1e-5
+    LR = 0.00001
     MOMENTUM = 0.937
     WEIGHT_DECAY = 0.0005
     # WEIGHT_DECAY *= 64 / 32   # Scale weight decay with batch size
@@ -71,7 +71,8 @@ class CFG:
     #     blur_alpha=0.05,
     # )
     LOSS_FN = nn.BCEWithLogitsLoss()
-    OPTIMIZER = torch.optim.AdamW(MODEL.parameters(), lr=LR, weight_decay=WEIGHT_DECAY,betas=(MOMENTUM, 0.999))
+    # OPTIMIZER = torch.optim.AdamW(MODEL.parameters(), lr=LR, weight_decay=WEIGHT_DECAY,betas=(MOMENTUM, 0.999))
+    OPTIMIZER = torch.optim.SGD(MODEL.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY, nesterov=True)
     
     TRAIN_TRANSFORM = v2.Compose([
         v2.ToImage(),

@@ -8,8 +8,19 @@ import torch
 def train(model, dataloader, loss_fn, optimizer, device, epoch, scaler=None):
     model.train()
     total_loss = 0
-    for x, m in tqdm(dataloader, desc=f"[Segmentation] Epoch {epoch+1}/{CFG.EPOCHS}"):
+    batch_count = 0
+    nan_count = 0
+    for batch_idx, (x, m) in enumerate(tqdm(dataloader, desc=f"[Segmentation] Epoch {epoch+1}/{CFG.EPOCHS}")):
+        
         x, m = x.to(device), m.to(device)
+        if torch.isnan(x).any() or torch.isinf(x).any():
+            print(f"Warning: Invalid input image values detected in batch {batch_idx}")
+            nan_count += 1
+            continue
+        if torch.isnan(m).any() or torch.isinf(m).any():
+            print(f"Warning: Invalid mask values detected in batch {batch_idx}")
+            nan_count += 1
+            continue
         # Backward pass with conditional scaler
         optimizer.zero_grad(set_to_none=True)
         # Forward pass with conditional autocast
@@ -20,28 +31,33 @@ def train(model, dataloader, loss_fn, optimizer, device, epoch, scaler=None):
         else:
             pred = model.forward_seg(x, (CFG.IMG_SIZE, CFG.IMG_SIZE))
             loss = loss_fn(pred, m)
-        
-        # if torch.isnan(loss):
-        #     print(f"Warning: NaN loss detected, skipping batch")
-        #     continue
-        # if torch.isinf(loss):
-        #     print(f"Warning: InF loss detected, skipping batch")
-        #     continue
         if CFG.USE_AMP:
             # AMP training
             scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             # update generator weights
             scaler.step(optimizer)
+            
             scaler.update()
         else:
             # Regular training
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
         
-        total_loss += loss.item()
+        if not (torch.isnan(loss) or torch.isinf(loss)):
+            total_loss += loss.item()
+            batch_count += 1
         
-    avg_loss = total_loss / len(dataloader)
-    print(f"Avg_loss={avg_loss:.4f}")
+    if batch_count > 0:
+        avg_loss = total_loss / batch_count
+    else:
+        avg_loss = float('nan')
+        print("Warning: No valid batches processed!")
+    if nan_count > 0:
+        print(f"Skipped {nan_count} batches due to NaN/Inf values.")
+    print(f"Avg_loss={avg_loss:.4f}, Valid batches: {batch_count}/{len(dataloader)}")
     
     
     #     # Check for NaN loss

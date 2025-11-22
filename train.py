@@ -41,7 +41,7 @@ def main():
             epoch,
             scaler=CFG.SCALER
             )
-        # validate_model(CFG.MODEL, test_loader, CFG.DEVICE, epoch, scaler=CFG.SCALER)
+        validate_model(CFG.MODEL, test_loader, CFG.DEVICE, epoch, scaler=CFG.SCALER)
     checkpoint = {
         'model': CFG.MODEL.state_dict(),
         'optimizer': CFG.OPTIMIZER.state_dict(),

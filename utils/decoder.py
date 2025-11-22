@@ -36,11 +36,19 @@ class DinoTinyDecoder(nn.Module):
         #     nn.ReLU(inplace=True),
         #     nn.Conv2d(64, out_ch, 1)
         # )
-        
+        self._initialize_weights()
     def forward(self, f, size):
         # f: (B, in_ch, S, S) from DINO
         # all convs at SxS, then upsample logits once
         x = self.net(f)  # (B, out_ch, S, S)
         x = F.interpolate(x, size=size, mode="bilinear", align_corners=False)
         return x
+    
+    def _initialize_weights(self):
+        """Initialize weights to prevent NaN issues"""
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
     

@@ -12,7 +12,7 @@ def validate_model(model, dataloader, device, epoch, scaler=None):
         for x, m in tqdm(dataloader, desc=f"[Segmentation] Epoch {epoch+1}/{CFG.EPOCHS}"):
             x, m = x.to(device), m.to(device)
             if CFG.USE_AMP and scaler is not None:
-                with torch.amp.autocast(device_type=device.type, dtype=CFG.SCALER_DTYPE, enabled=True):
+                with torch.amp.autocast(device_type=device.type, dtype=CFG.SCALER_DTYPE, enabled=CFG.USE_AMP):
                     preds = model.forward_seg(x, (CFG.IMG_SIZE, CFG.IMG_SIZE))
 
                     preds_np = (preds.sigmoid().detach().cpu().numpy() > 0.5).astype(np.uint8)
